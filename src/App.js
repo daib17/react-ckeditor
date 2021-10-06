@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import "./App.css";
 
 import axios from "axios";
 
-// const apiURL = "http://localhost/data/";
+// const apiURL = "http://localhost:1337/data/";
 const apiURL = "https://jsramverk-editor-daib17.azurewebsites.net/data/";
 
 class App extends Component {
@@ -14,7 +15,7 @@ class App extends Component {
       title: "",
       content: ""
     };
-    // Bindings necessary to make 'this' work in the callback
+    this.handleLoad = this.handleLoad.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.handleTitleChange = this.handleTitleChange.bind(this);
   }
@@ -22,47 +23,40 @@ class App extends Component {
   componentDidMount() {
     axios
       .get(apiURL)
-      // .get("http://localhost:1337/data")
       .then((res) => {
-        console.log(res);
         this.setState({
           title: res.data.docs[0].title,
           content: res.data.docs[0].content
         });
-        // console.log("axios: " + this.state.content);
       })
       .catch((error) => console.log(error));
   }
 
-  componentDidUpdate(prevProps) {
-    // console.log("Update: " + this.state.content);
+  handleLoad(e) {
+    e.preventDefault();
+    axios
+      .get(apiURL + this.state.title)
+      .then((res) => {
+        if (res.data.doc) {
+          this.setState({
+            title: res.data.doc.title,
+            content: res.data.doc.content
+          });
+        }
+      })
+      .catch((error) => console.log(error));
   }
 
   handleSave(e) {
     e.preventDefault();
-    // Check if doc already in database
+    const doc = {
+      title: this.state.title,
+      content: this.state.content
+    };
+
     axios
-      .get(apiURL + this.state.title)
-      // .get("http://localhost:1337/data/" + this.state.title)
-      .then((res) => {
-        const doc = {
-          title: this.state.title,
-          content: this.state.content
-        };
-        if (res.data.doc) {
-          console.log("UPDATE...");
-          axios
-            .put(apiURL, doc)
-            .then((res) => console.log(res))
-            .catch((error) => console.log(error));
-        } else {
-          console.log("INSERT...");
-          axios
-            .post(apiURL, doc)
-            .then((res) => console.log(res))
-            .catch((error) => console.log(error));
-        }
-      })
+      .put(apiURL, doc)
+      .then((res) => console.log(res))
       .catch((error) => console.log(error));
   }
 
@@ -71,11 +65,10 @@ class App extends Component {
   }
 
   render() {
-    // console.log("RENDER:" + this.state.content);
     return (
-      <div className="App">
+      <div>
         <h2>Using CKEditor 5 build in React</h2>
-        <form onSubmit={this.handleSave}>
+        <div className="navbar">
           <label>
             Title:
             <input
@@ -84,25 +77,24 @@ class App extends Component {
               onChange={this.handleTitleChange}
             />
           </label>
-          <input type="submit" value="Save" />
-        </form>
+          <button type="button" onClick={this.handleLoad}>
+            Load
+          </button>
+          <button type="button" onClick={this.handleSave}>
+            Save
+          </button>
+        </div>
+
         <CKEditor
           editor={ClassicEditor}
           data={this.state.content}
-          onReady={(editor) => {
-            console.log("onReady: ", this.state.content);
-          }}
+          onReady={(editor) => {}}
           onChange={(event, editor) => {
             const newContent = editor.getData();
             this.setState({ content: newContent });
-            console.log("onChange: ", this.state.content);
           }}
-          onBlur={(event, editor) => {
-            console.log("onBlur: ", this.state.content);
-          }}
-          onFocus={(event, editor) => {
-            console.log("onFocus: ", this.state.content);
-          }}
+          onBlur={(event, editor) => {}}
+          onFocus={(event, editor) => {}}
         />
       </div>
     );
