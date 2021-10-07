@@ -1,3 +1,15 @@
-.navbar {
-  padding: 15px;
+div.input-group {
+  padding: 5% 40% 5% 0;
+}
+
+.list-group {
+  padding: 20% 5% 5% 0;
+}
+
+.ck-rounded-corners {
+  min-width: 90%;
+}
+
+.ck-content {
+  min-height: 200px;
 }
